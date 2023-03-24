@@ -15,7 +15,7 @@ import (
 	"net"
 	"testing"
 
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 )
 
 type serverType func(Channel, <-chan *Request, *testing.T)
@@ -418,8 +418,8 @@ func handleTerminalRequests(in <-chan *Request) {
 	}
 }
 
-func newServerShell(ch Channel, in <-chan *Request, prompt string) *terminal.Terminal {
-	term := terminal.NewTerminal(ch, prompt)
+func newServerShell(ch Channel, in <-chan *Request, prompt string) *term.Terminal {
+	term := term.NewTerminal(ch, prompt)
 	go handleTerminalRequests(in)
 	return term
 }
@@ -501,7 +501,7 @@ func fixedOutputHandler(ch Channel, in <-chan *Request, t *testing.T) {
 	sendStatus(0, ch, t)
 }
 
-func readLine(shell *terminal.Terminal, t *testing.T) {
+func readLine(shell *term.Terminal, t *testing.T) {
 	if _, err := shell.ReadLine(); err != nil && err != io.EOF {
 		t.Errorf("unable to read line: %v", err)
 	}

@@ -15,8 +15,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"golang.org/x/crypto/ssh"
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
+
+	"github.com/edutko/hassh-go/x/crypto/ssh"
 )
 
 func ExampleNewServerConn() {
@@ -124,7 +125,7 @@ func ExampleNewServerConn() {
 			}
 		}(requests)
 
-		term := terminal.NewTerminal(channel, "> ")
+		term := term.NewTerminal(channel, "> ")
 
 		go func() {
 			defer channel.Close()
