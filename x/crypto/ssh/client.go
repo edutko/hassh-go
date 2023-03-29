@@ -224,6 +224,11 @@ type ClientConfig struct {
 	// simplistic display on Stderr.
 	BannerCallback BannerCallback
 
+	// KexinitCallback, if present, is called during the handshake with
+	// information about the (kex/cipher/mac/compression) protocols supported
+	// by the server.
+	KexinitCallback KexinitCallback
+
 	// ClientVersion contains the version identification string that will
 	// be used for the connection. If empty, a reasonable default is used.
 	ClientVersion string

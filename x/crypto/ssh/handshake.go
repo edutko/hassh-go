@@ -14,6 +14,19 @@ import (
 	"sync"
 )
 
+// KexinitInfo represents the lists of supported algorithms specified in the
+// SSH_MSG_KEXINIT message.
+type KexinitInfo struct {
+	KexAlgos        []string
+	PeerCiphers     []string
+	PeerMACs        []string
+	PeerCompression []string
+}
+
+// KexinitCallback is the function type used for collecting information about
+// the SSH handshake.
+type KexinitCallback func(info KexinitInfo)
+
 // debugHandshake, if set, prints messages sent and received.  Key
 // exchange messages are printed as if DH were used, so the debug
 // messages are wrong when using ECDH.
@@ -86,6 +99,8 @@ type handshakeTransport struct {
 	// dance to handle a custom server's message.
 	bannerCallback BannerCallback
 
+	kexinitCallback KexinitCallback
+
 	// Algorithms agreed in the last key exchange.
 	algorithms *algorithms
 
@@ -128,6 +143,7 @@ func newClientTransport(conn keyingTransport, clientVersion, serverVersion []byt
 	t.remoteAddr = addr
 	t.hostKeyCallback = config.HostKeyCallback
 	t.bannerCallback = config.BannerCallback
+	t.kexinitCallback = config.KexinitCallback
 	if config.HostKeyAlgorithms != nil {
 		t.hostKeyAlgorithms = config.HostKeyAlgorithms
 	} else {
@@ -585,6 +601,15 @@ func (t *handshakeTransport) enterKeyExchange(otherInitPacket []byte) error {
 
 		magics.clientKexInit = t.sentInitPacket
 		magics.serverKexInit = otherInitPacket
+	}
+
+	if t.kexinitCallback != nil {
+		t.kexinitCallback(KexinitInfo{
+			KexAlgos:        otherInit.KexAlgos,
+			PeerCiphers:     otherInit.CiphersServerClient,
+			PeerMACs:        otherInit.MACsServerClient,
+			PeerCompression: otherInit.CompressionServerClient,
+		})
 	}
 
 	var err error
